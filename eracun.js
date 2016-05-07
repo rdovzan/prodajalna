@@ -208,16 +208,23 @@ streznik.post('/prijava', function(zahteva, odgovor) {
     	  Address, City, State, Country, PostalCode, \
     	  Phone, Fax, Email, SupportRepId) \
         VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");
-      //TODO: add fields and finalize
-      //stmt.run("", "", "", "", "", "", "", "", "", "", "", 3); 
-      //stmt.finalize();
+      // Zapis v podatkovno bazo
+      stmt.run(polja.FirstName, polja.LastName, polja.Company, polja.Address,
+      polja.City, polja.State, polja.Country, polja.PostalCode, polja.Phone, polja.Fax, polja.Email, 3); 
+      stmt.finalize();
     } catch (err) {
       napaka2 = true;
     }
-  
-    odgovor.end();
-  });
-})
+    //Prikaz strani za prijavo s sporočilom o uspeli registraciji
+    var sporocilo = "Stranka je bila uspešno registrirana.";
+    vrniStranke(function(napaka3, stranke) {
+      vrniRacune(function(napaka4, racuni) {
+        if(napaka1 || napaka2 || napaka3 || napaka4) sporocilo = "Prišlo je do napake pri registraciji nove stranke. Prosim preverite vnešene podatke in poskusite znova.";
+        odgovor.render('prijava', {sporocilo: sporocilo, seznamStrank: stranke, seznamRacunov: racuni});  
+       })
+     }) 
+    })
+  })
 
 // Prikaz strani za prijavo
 streznik.get('/prijava', function(zahteva, odgovor) {
