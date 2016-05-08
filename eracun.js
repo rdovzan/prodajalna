@@ -179,11 +179,18 @@ streznik.get('/izpisiRacun/:oblika', function(zahteva, odgovor) {
       odgovor.send("<p>V košarici nimate nobene pesmi, \
         zato računa ni mogoče pripraviti!</p>");
     } else {
-      odgovor.setHeader('content-type', 'text/xml');
-      odgovor.render('eslog', {
-        vizualiziraj: zahteva.params.oblika == 'html' ? true : false,
-        postavkeRacuna: pesmi
-      })  
+      // Izpis racuna za prijavljeno stranko
+      var stranka = zahteva.session.stranka;
+      vrniStranko(stranka, function(vrstice) {
+        var narocnikRacuna = vrstice[0];
+        //console.log(narocnikRacuna);
+        odgovor.setHeader('content-type', 'text/xml');
+        odgovor.render('eslog', {
+          vizualiziraj: zahteva.params.oblika == 'html' ? true : false,
+          postavkeRacuna: pesmi,
+          narocnikRacuna: narocnikRacuna
+        })
+      }) 
     }
   })
 })
@@ -212,6 +219,15 @@ var vrniRacune = function(callback) {
       callback(napaka, vrstice);
     }
   );
+}
+
+// Vrni stranko iz podatkovne baze
+var vrniStranko = function(strankaId, callback) {
+  pb.all("SELECT * FROM Customer \
+  WHERE Customer.CustomerId = " + strankaId,
+    function(napaka, vrstice) {
+      callback(vrstice);
+    })
 }
 
 // Registracija novega uporabnika
